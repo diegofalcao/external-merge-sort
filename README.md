@@ -3,13 +3,14 @@ This program sorts big files using external memory. The algorithm uses the balan
 
 #How to compile
 Just type the following command in the console to compile the source files and generated the initial unsorted files:
-
+```
 make
-
+```
 After that, type:
-
-$ make tests
-
+```
+make tests
+```
 or run individual tests by typing:
-
-$ ./external-sort [source_file_path] [output_file_name] [memory_to_be_used_in_MB] [number_of_ways] 
+```
+./external-sort [source_file_path] [output_file_name] [memory_to_be_used_in_MB] [number_of_ways] 
+```

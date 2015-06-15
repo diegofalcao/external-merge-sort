@@ -13,14 +13,14 @@
 
 #include "priority-queue.h"
 
-void insert(heapNode aNode, heapNode* heap, int32_t size) {
+void insert (heap_node a_node, heap_node *heap, int32_t size) {
     int32_t idx;
     
-    heapNode tmp;
+    heap_node tmp;
     
     idx = size + 1;
     
-    heap[idx] = aNode;
+    heap[idx] = a_node;
     
     while (heap[idx].value < heap[idx/2].value && idx > 1) {
         tmp = heap[idx];
@@ -33,10 +33,10 @@ void insert(heapNode aNode, heapNode* heap, int32_t size) {
     }
 }
 
-void shiftdown(heapNode* heap, int32_t size, int32_t idx) {
+void shift_down (heap_node *heap, int32_t size, int32_t idx) {
     int32_t cidx;        //index for child
     
-    heapNode tmp;
+    heap_node tmp;
     
     for (;;) {
         cidx = idx*2;
@@ -64,33 +64,33 @@ void shiftdown(heapNode* heap, int32_t size, int32_t idx) {
     }
 }
 
-heapNode removeMin(heapNode* heap, int32_t size) {
-    heapNode rv = heap[1];
+heap_node remove_min (heap_node *heap, int32_t size) {
+    heap_node rv = heap[1];
     
     heap[1] = heap[size];
     
     --size;
     
-    shiftdown(heap, size, 1);
+    shift_down(heap, size, 1);
     
     return rv;
 }
 
-void enqueue(heapNode node, PQ *q) {
+void enqueue (heap_node node, PQ *q) {
     insert(node, q->heap, q->size);
     
     ++q->size;
 }
 
-heapNode dequeue(PQ *q) {
-    heapNode rv = removeMin(q->heap, q->size);
+heap_node dequeue (PQ *q) {
+    heap_node rv = remove_min(q->heap, q->size);
     
     --q->size;
     
     return rv;
 }
 
-void initQueue(PQ *q, int32_t n) {
+void init_queue (PQ *q, int32_t n) {
     q->size = 0;
-    q->heap = (heapNode*)malloc(sizeof(heapNode)*(n+1));
+    q->heap = (heap_node*) malloc(sizeof(heap_node) * (n+1));
 }

@@ -14,16 +14,16 @@
 
 #include "binary-file-manager.h"
 
-int32_t generateRandomNumber() {
+int32_t generate_random_number () {
     int32_t number = rand();
     
     return number;
 }
 
-int32_t writeBinaryFile(char *fileName, long totalSize) {
-    FILE *file = fopen(fileName, "wb");
+int32_t write_binary_file (char *file_name, long total_size) {
+    FILE *file = fopen(file_name, "wb");
     
-    long fileSize = 0;
+    long file_size = 0;
     
     if (!file) {
         printf("Unable to open file!");
@@ -31,13 +31,13 @@ int32_t writeBinaryFile(char *fileName, long totalSize) {
         return 1;
     }
     
-    while (fileSize < totalSize) {
+    while (file_size < total_size) {
         
-        int32_t number = generateRandomNumber();
+        int32_t number = generate_random_number();
         
         fwrite(&number, sizeof(int), 1, file);
         
-        fileSize = fileSize + sizeof(int);
+        file_size = file_size + sizeof(int);
     }
     
     fclose(file);
@@ -46,10 +46,10 @@ int32_t writeBinaryFile(char *fileName, long totalSize) {
     
 }
 
-int32_t readBinaryFile(char *fileName) {
-    printf("\nFILENAME: %s\n", fileName);
+int32_t read_binary_file(char *file_name) {
+    printf("\nFILENAME: %s\n", file_name);
     
-    FILE *file = fopen(fileName, "rb");
+    FILE *file = fopen(file_name, "rb");
     
     if (!file) {
         printf("Unable to open file!");
@@ -91,7 +91,7 @@ int32_t main(int32_t argc, char *argv[]) {
                 return 0;
             }
             
-            writeBinaryFile(argv[2], atol(argv[3]) * 1000 * 1000);
+            write_binary_file(argv[2], atol(argv[3]) * 1000 * 1000);
         } else if (strcmp(argv[1], "-r") == 0 || strcmp(argv[1], "-R") == 0) {
             if (argc != 3) {
                 /* We print32_t argv[0] assuming it is the program name */
@@ -100,7 +100,7 @@ int32_t main(int32_t argc, char *argv[]) {
                 return 1;
             }
 
-            readBinaryFile(argv[2]);
+            read_binary_file(argv[2]);
         } else {
             /* We print32_t argv[0] assuming it is the program name */
             printf("\nUsage: %s <file_name> <size_in_mb>\n", argv[0]);
@@ -113,7 +113,6 @@ int32_t main(int32_t argc, char *argv[]) {
         
         return 1;
     }
-    
     
     return 0;
 }

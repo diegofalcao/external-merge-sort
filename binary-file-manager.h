@@ -9,7 +9,7 @@
 #ifndef __binary_file_manager_h__
 #define __binary_file_manager_h__
 
-int32_t writeBinaryFile(char *fileName, long totalSize);
-int32_t readBinaryFile(char *fileName);
+int32_t write_binary_file (char *file_name, long total_size);
+int32_t read_binary_file (char *file_name);
 
 #endif

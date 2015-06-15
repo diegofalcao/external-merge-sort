@@ -23,8 +23,8 @@ typedef struct KFile {
     int32_t id;
     char *name;
     FILE *file;
-    Run actualRun;
-    unsigned long actualSize;
+    Run actual_run;
+    unsigned long actual_size;
 } KFile;
 
 #endif

@@ -9,18 +9,18 @@
 #ifndef __priority_queue_h__
 #define __priority_queue_h__
 
-typedef struct heapNode {
+typedef struct heap_node {
     int32_t value;
-    int32_t KFileIndex;
-} heapNode;
+    int32_t KFile_index;
+} heap_node;
 
 typedef struct PQ {
-    heapNode* heap;
+    heap_node *heap;
     int32_t size;
 } PQ;
 
-void initQueue(PQ *q, int32_t n);
-void enqueue(heapNode node, PQ *q);
-heapNode dequeue(PQ *q);
+void init_queue(PQ *q, int32_t n);
+void enqueue(heap_node node, PQ *q);
+heap_node dequeue(PQ *q);
     
 #endif

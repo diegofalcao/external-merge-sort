@@ -17,54 +17,54 @@
 #include "external-sort.h"
 
 /* this function compares two numbers to verify which one is higher */
-int32_t cmpFunction(const void * a, const void * b) {
+int32_t compare_function (const void * a, const void * b) {
     return (*(int*)a - *(int*)b);
 }
 
 /* Generates the initial k-ways */
-KFile* generateKFiles(const int32_t K) {
-    KFile *files = malloc((2*K) * sizeof(KFile));
+KFile* generate_KFiles (const int32_t K) {
+    KFile *files = malloc ((2*K) * sizeof(KFile));
     
     int32_t i;
     
     for (i = 0; i < (2 * K); i++) {
-        char *charTmp = malloc(sizeof(int));
-        sprintf(charTmp, "%d", i);
+        char *tmp_char = malloc (sizeof(int));
+        sprintf(tmp_char, "%d", i);
         
         //+1 for the zero-terminator
-        char *fileName = malloc(strlen("kfile_")
-                                + strlen(charTmp)
+        char *file_name = malloc(strlen("kfile_")
+                                + strlen(tmp_char)
                                 + strlen(".bin") + 1);
         
-        strcpy(fileName, "kfile_");
-        strcat(fileName, charTmp);
-        strcat(fileName, ".bin");
+        strcpy(file_name, "kfile_");
+        strcat(file_name, tmp_char);
+        strcat(file_name, ".bin");
 
         files[i].id = i;
-        files[i].name = fileName;
-        files[i].file = fopen(fileName, "w+b");
-        files[i].actualSize = 0;
-        files[i].actualRun.size = 0;
+        files[i].name = file_name;
+        files[i].file = fopen(file_name, "w+b");
+        files[i].actual_size = 0;
+        files[i].actual_run.size = 0;
     }
     
     return files;
 }
 
-void printFileStructure(KFile *files, int32_t size) {
+void print_file_structure (KFile *files, int32_t size) {
     printf("\n***********************************************");
     
     for (int32_t i = 0; i < size; i++) {
         printf("\nID: %d\n", files[i].id);
         printf("NAME: %s\n", files[i].name);
-        printf("ACTUAL SIZE: %lu", files[i].actualSize);
+        printf("ACTUAL SIZE: %lu", files[i].actual_size);
         
-        printf("\nACTUAL RUN SIZE: %zu", files[i].actualRun.size);
+        printf("\nACTUAL RUN SIZE: %zu", files[i].actual_run.size);
     }
     
     printf("\n***********************************************");
 }
 
-unsigned long getFileLength(FILE* file) {
+unsigned long get_file_length (FILE* file) {
     unsigned long fileLength;
     
     fseek(file, 0, SEEK_END);
@@ -76,57 +76,57 @@ unsigned long getFileLength(FILE* file) {
     return fileLength;
 }
 
-int32_t getNumberOfRuns(unsigned long fileLength, const int32_t AVAILABLE_MEMORY) {
-    int32_t numberOfRuns = ceil((float) fileLength / AVAILABLE_MEMORY);
+int32_t get_number_of_runs (unsigned long file_length, const int32_t AVAILABLE_MEMORY) {
+    int32_t number_of_runs = ceil((float) file_length / AVAILABLE_MEMORY);
     
-    return numberOfRuns;
+    return number_of_runs;
 }
 
 /* Generate the initial runs */
-KFile* generateRuns(FILE *file,
+KFile* generate_runs (FILE *file,
                     const int32_t AVAILABLE_MEMORY,
                     const int32_t K) {
-    KFile* files = generateKFiles(K);
+    KFile* files = generate_KFiles(K);
     
     int32_t * buffer = NULL;
     
-    int32_t numberOfTotalRuns = getNumberOfRuns(getFileLength(file), AVAILABLE_MEMORY);
+    int32_t number_of_total_runs = get_number_of_runs(get_file_length(file), AVAILABLE_MEMORY);
     
     int32_t x;
     
-    for (x = 0; x < numberOfTotalRuns; x++) {
+    for (x = 0; x < number_of_total_runs; x++) {
         buffer = (int32_t *) malloc(AVAILABLE_MEMORY);
         
-        size_t bytesRead = fread(buffer, 1, AVAILABLE_MEMORY, file);
+        size_t bytes_read = fread(buffer, 1, AVAILABLE_MEMORY, file);
         
-        qsort(buffer, bytesRead / ITEM_SIZE, sizeof(int), cmpFunction);
+        qsort(buffer, bytes_read / ITEM_SIZE, sizeof(int), compare_function);
         
-        int32_t actualPosition = x % K;
+        int32_t actual_position = x % K;
         
-        files[actualPosition].actualSize = files[actualPosition].actualSize
-        + bytesRead;
+        files[actual_position].actual_size = files[actual_position].actual_size
+        + bytes_read;
         
         Run run;
-        run.size = bytesRead;
+        run.size = bytes_read;
         
-        int32_t numberOfRuns;
+        int32_t number_of_runs;
         
-        if((actualPosition + 1) == K - 1) {
-            numberOfRuns = ceil((double) numberOfTotalRuns / K);
+        if ((actual_position + 1) == K - 1) {
+            number_of_runs = ceil((double) number_of_total_runs / K);
         }
         else {
-            numberOfRuns = round((double) numberOfTotalRuns / K);
+            number_of_runs = round((double) number_of_total_runs / K);
         }
         
-        if(files[actualPosition].actualRun.size == 0) {
-            files[actualPosition].actualRun = run;
+        if (files[actual_position].actual_run.size == 0) {
+            files[actual_position].actual_run = run;
         }
         
-        fwrite(buffer, bytesRead, 1, files[actualPosition].file);
+        fwrite(buffer, bytes_read, 1, files[actual_position].file);
     }
     
     /* Seek to the beginning of the file */
-    for(x = 0; x < K + 1; x++) {
+    for (x = 0; x < K + 1; x++) {
         fseek(files[x].file, SEEK_SET, 0);
     }
     
@@ -135,147 +135,147 @@ KFile* generateRuns(FILE *file,
     return files;
 }
 
-int32_t intLog(double base, double x) {
+int32_t int_log (double base, double x) {
     return ceil((double) (log(x) / log(base)));
 }
 
 /* Interpolate the values and return the output file index */
 int32_t interpolate(KFile *files,
-                unsigned long inputFileLength,
+                unsigned long input_file_length,
                 const unsigned long AVAILABLE_MEMORY,
                 const int32_t K) {
     
-    PQ priorityQueue;
+    PQ priority_queue;
 
-    int32_t numOfinterpolationSteps = intLog(K, inputFileLength / AVAILABLE_MEMORY);
+    int32_t num_of_interpolation_steps = int_log(K, input_file_length / AVAILABLE_MEMORY);
     
-    int32_t countNumOfInterpolations;
-    int32_t countNumOfCombinationPerInterpolation;
+    int32_t count_num_of_interpolations;
+    int32_t count_num_of_combination_per_interpolation;
  
     /* It holds the actual output position index */
-    int32_t actualOutputPosition = -1;
+    int32_t actual_output_position = -1;
     
-    for (countNumOfInterpolations = 0;
-         countNumOfInterpolations < numOfinterpolationSteps;
-         countNumOfInterpolations++) {
+    for (count_num_of_interpolations = 0;
+         count_num_of_interpolations < num_of_interpolation_steps;
+         count_num_of_interpolations++) {
         
-        int32_t numOfCombinationsPerInterpolation = numOfinterpolationSteps -
-                                                countNumOfInterpolations;
+        int32_t num_of_combinations_per_interpolation = num_of_interpolation_steps -
+                                                        count_num_of_interpolations;
         
         int32_t start, end;
         
         
-        if (countNumOfInterpolations % 2 == 0) {
+        if (count_num_of_interpolations % 2 == 0) {
             start = 0;
             end = K;
 
-            actualOutputPosition = K;
+            actual_output_position = K;
 
         } else {
             start = K;
             end = 2 * K;
             
-            actualOutputPosition = 0;
+            actual_output_position = 0;
         }
         
-        for(countNumOfCombinationPerInterpolation = 0;
-            countNumOfCombinationPerInterpolation < numOfCombinationsPerInterpolation;
-            countNumOfCombinationPerInterpolation++) {
+        for (count_num_of_combination_per_interpolation = 0;
+            count_num_of_combination_per_interpolation < num_of_combinations_per_interpolation;
+            count_num_of_combination_per_interpolation++) {
 
             int32_t count;
             
-            size_t totalBytesToBeWritten = 0;
+            size_t total_bytes_written = 0;
             
-            initQueue(&priorityQueue, K);
+            init_queue(&priority_queue, K);
  
             /* Populates the heap with the first values of the current run */
             for (count = start; count < end; count++) {
 
-                if (files[count].actualSize == 0) {
+                if (files[count].actual_size == 0) {
                     continue;
                 }
                 
                 /* skip only in the first time */
-                if(countNumOfCombinationPerInterpolation == 0 &&
-                   countNumOfInterpolations > 0) {
+                if (count_num_of_combination_per_interpolation == 0 &&
+                   count_num_of_interpolations > 0) {
                     fseek(files[count].file, SEEK_SET, 0);
                 }
                 
                 /* Creating the initial current run for each k-way */
-                if(files[count].actualSize != 0 && files[count].actualRun.size == 0) {
+                if (files[count].actual_size != 0 && files[count].actual_run.size == 0) {
                     Run run;
                     
-                    if(files[count].actualSize <= AVAILABLE_MEMORY) {
-                        run.size = files[count].actualSize;
+                    if(files[count].actual_size <= AVAILABLE_MEMORY) {
+                        run.size = files[count].actual_size;
                     }
                     else {
-                        run.size = (countNumOfInterpolations + 1) * AVAILABLE_MEMORY;
+                        run.size = (count_num_of_interpolations + 1) * AVAILABLE_MEMORY;
                     }
                     
-                    files[count].actualRun = run;
+                    files[count].actual_run = run;
                 }
                 
-                heapNode tmpHeapNode;
-                tmpHeapNode.KFileIndex = count;
+                heap_node tmp_heap_node;
+                tmp_heap_node.KFile_index = count;
                 
-                fread(&tmpHeapNode.value, 1, ITEM_SIZE, files[count].file);
+                fread(&tmp_heap_node.value, 1, ITEM_SIZE, files[count].file);
                 
-                totalBytesToBeWritten += files[count].actualRun.size;
+                total_bytes_written += files[count].actual_run.size;
                 
-                files[count].actualRun.size -= sizeof(int);
-                files[count].actualSize -= sizeof(int);
+                files[count].actual_run.size -= sizeof(int);
+                files[count].actual_size -= sizeof(int);
                 
-                enqueue(tmpHeapNode, &priorityQueue);
+                enqueue(tmp_heap_node, &priority_queue);
             }
 
-            size_t totalBytesWritten = 0;
+            total_bytes_written = 0;
             
             /* If the destination file has values and we are in the first
              * combination, clean it! 
              */
-            if(countNumOfCombinationPerInterpolation == 0 &&
-                countNumOfInterpolations > 0) {
+            if (count_num_of_combination_per_interpolation == 0 &&
+                count_num_of_interpolations > 0) {
                 
-                ftruncate(fileno(files[actualOutputPosition].file), 0);
+                ftruncate(fileno(files[actual_output_position].file), 0);
 
-                fseek(files[actualOutputPosition].file, SEEK_SET, 0);
+                fseek(files[actual_output_position].file, SEEK_SET, 0);
             }
 
-            while (priorityQueue.size > 0) {
-                heapNode heapNode = dequeue(&priorityQueue);
+            while (priority_queue.size > 0) {
+                heap_node heap_node = dequeue(&priority_queue);
                 
-                fwrite(&heapNode.value, sizeof(int), 1, files[actualOutputPosition].file);
+                fwrite(&heap_node.value, sizeof(int), 1, files[actual_output_position].file);
                 
-                files[actualOutputPosition].actualSize += sizeof(int);
+                files[actual_output_position].actual_size += sizeof(int);
                 
-                totalBytesWritten += sizeof(int);
+                total_bytes_written += sizeof(int);
                 
-                if (files[heapNode.KFileIndex].actualRun.size == 0) {
+                if (files[heap_node.KFile_index].actual_run.size == 0) {
                     continue;
                 }
                 
-                fread(&heapNode.value, 1, ITEM_SIZE, files[heapNode.KFileIndex].file);
+                fread(&heap_node.value, 1, ITEM_SIZE, files[heap_node.KFile_index].file);
                 
-                files[heapNode.KFileIndex].actualRun.size -= sizeof(int);
+                files[heap_node.KFile_index].actual_run.size -= sizeof(int);
                 
-                files[heapNode.KFileIndex].actualSize = files[heapNode.KFileIndex].actualSize - sizeof(int);
+                files[heap_node.KFile_index].actual_size = files[heap_node.KFile_index].actual_size - sizeof(int);
                 
-                enqueue(heapNode, &priorityQueue);
+                enqueue(heap_node, &priority_queue);
             }
             
             /* Generating the runs for the new output file */
             Run run;
-            run.size = totalBytesWritten;
+            run.size = total_bytes_written;
             
-            if (files[actualOutputPosition].actualRun.size == 0) {
-                files[actualOutputPosition].actualRun = run;
+            if (files[actual_output_position].actual_run.size == 0) {
+                files[actual_output_position].actual_run = run;
             }
 
-            actualOutputPosition++;
+            actual_output_position++;
         }
     }
     
-    return (actualOutputPosition - 1);
+    return (actual_output_position - 1);
     
 }
 
@@ -311,33 +311,33 @@ int32_t main(int32_t argc, char *argv[]) {
     
     begin = clock();
     
-    KFile *files = generateRuns(file, AVAILABLE_MEMORY, K);
+    KFile *files = generate_runs(file, AVAILABLE_MEMORY, K);
 
-    unsigned long inputFileLength = getFileLength(file);
+    unsigned long input_file_length = get_file_length(file);
     
-    int32_t outputFileIndex = interpolate(files, inputFileLength, AVAILABLE_MEMORY, K);
+    int32_t output_file_index = interpolate(files, input_file_length, AVAILABLE_MEMORY, K);
 
     end = clock();
     
-    double searchTimeSpent = (double) (end - begin) / CLOCKS_PER_SEC;
+    double time_spent = (double) (end - begin) / CLOCKS_PER_SEC;
 
     /* closing the files and renaming the output file */
     for (int32_t x = 0; x < 2 * K; x++) {
         fclose(files[x].file);
         
-        if (x == outputFileIndex) {
+        if (x == output_file_index) {
             continue;
         }
         
         remove(files[x].name);
     }
 
-    rename(files[outputFileIndex].name, argv[2]);
+    rename(files[output_file_index].name, argv[2]);
 
     printf("\nINPUT FILE: %s\n", argv[1]);
     printf("\nAVAILABLE MEMORY: %d", AVAILABLE_MEMORY);
     printf("\nK: %d", K);
-    printf("\n%lf\n", searchTimeSpent);
+    printf("\n%lf\n", time_spent);
     
     fclose(file);
     

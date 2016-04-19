@@ -2,7 +2,7 @@
 This program sorts big files using external memory. The algorithm uses the balanced interpolation based on k-ways and uses a Heap structure to make the interpolation step between the runs.
 
 #How to compile
-Just type the following command in the console to compile the source files and generated the initial unsorted files:
+Just type the following command in the console to compile the source files and generate the initial unsorted files:
 ```
 make
 ```
